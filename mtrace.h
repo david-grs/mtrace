@@ -32,7 +32,7 @@ struct mtrace
         void* p = ::malloc(size);
 
         save_hooks();
-        std::cout << "malloc " << size << std::endl;
+        std::cout << "malloc " << size << " bytes: " << p << std::endl;
         load_custom_hooks();
         return p;
     }
@@ -55,7 +55,7 @@ struct mtrace
         void* p = ::realloc(mem, size);
 
         save_hooks();
-        std::cout << "realloc " << size << std::endl;
+        std::cout << "realloc " << size << " bytes: " << p << std::endl;
         load_custom_hooks();
         return p;
     }
