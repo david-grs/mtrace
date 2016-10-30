@@ -48,11 +48,24 @@ struct memcheck
         load_custom_hooks();
     }
 
+    static void* realloc(void* mem, size_t size, const void* caller)
+    {
+        restore_hooks();
+
+        void* p = ::realloc(mem, size);
+
+        save_hooks();
+        std::cout << "realloc " << size << std::endl;
+        load_custom_hooks();
+        return p;
+    }
+
 private:
     static void load_custom_hooks()
     {
         __malloc_hook = malloc;
         __free_hook = free;
+        __realloc_hook = realloc;
     }
 
     static void save_hooks()
