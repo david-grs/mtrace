@@ -12,15 +12,15 @@ namespace
     using realloc_hook = void*(*)(void*, size_t, const void*);
 }
 
-struct memcheck
+struct mtrace
 {
-    memcheck()
+    mtrace()
     {
         save_hooks();
         load_custom_hooks();
     }
 
-    ~memcheck()
+    ~mtrace()
     {
         restore_hooks();
     }
@@ -87,7 +87,7 @@ private:
     static realloc_hook _old_realloc;
 };
 
-malloc_hook memcheck::_old_malloc;
-free_hook memcheck::_old_free;
-realloc_hook memcheck::_old_realloc;
+malloc_hook mtrace::_old_malloc;
+free_hook mtrace::_old_free;
+realloc_hook mtrace::_old_realloc;
 
