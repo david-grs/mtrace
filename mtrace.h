@@ -37,16 +37,15 @@ struct memcheck
         return p;
     }
 
-    static void* free(void* mem, const void* caller)
+    static void free(void* mem, const void* caller)
     {
         restore_hooks();
 
-        void* p = ::free(mem);
+        ::free(mem);
 
         save_hooks();
         std::cout << "free " << mem << std::endl;
         load_custom_hooks();
-        return p;
     }
 
 private:
