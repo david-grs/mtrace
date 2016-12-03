@@ -18,7 +18,7 @@ struct printer_handler
 {
     void operator()(size_t size, const void* caller)
     {
-        std::cout << "malloc " << size << " bytes: " << p << std::endl;
+        std::cout << "malloc " << size << std::endl;
     }
 
     void operator()(void* mem, const void* caller)
@@ -110,7 +110,7 @@ private:
 
 using mtrace_printer = mtrace<printer_handler>;
 
-malloc_hook mtrace::_old_malloc;
-free_hook mtrace::_old_free;
-realloc_hook mtrace::_old_realloc;
+template <typename Handler> malloc_hook mtrace<Handler>::_old_malloc;
+template <typename Handler> free_hook mtrace<Handler>::_old_free;
+template <typename Handler> realloc_hook mtrace<Handler>::_old_realloc;
 
