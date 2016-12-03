@@ -14,6 +14,25 @@ namespace
     using realloc_hook = void*(*)(void*, size_t, const void*);
 }
 
+struct printer_handler
+{
+    void operator()(size_t size, const void* caller)
+    {
+        std::cout << "malloc " << size << " bytes: " << p << std::endl;
+    }
+
+    void operator()(void* mem, const void* caller)
+    {
+        std::cout << "free " << mem << std::endl;
+    }
+
+    void operator()(void* mem, size_t size, const void* caller)
+    {
+        std::cout << "realloc " << mem << " bytes: " << size << std::endl;
+    }
+};
+
+template <typename Handler>
 struct mtrace
 {
     mtrace()
@@ -34,7 +53,7 @@ struct mtrace
         void* p = ::malloc(size);
 
         save_hooks();
-        std::cout << "malloc " << size << " bytes: " << p << std::endl;
+        Handler()(size, caller);
         load_custom_hooks();
         return p;
     }
@@ -46,7 +65,7 @@ struct mtrace
         ::free(mem);
 
         save_hooks();
-        std::cout << "free " << mem << std::endl;
+        Handler()(mem, caller);
         load_custom_hooks();
     }
 
@@ -57,7 +76,7 @@ struct mtrace
         void* p = ::realloc(mem, size);
 
         save_hooks();
-        std::cout << "realloc " << size << " bytes: " << p << std::endl;
+        Handler()(mem, size, caller);
         load_custom_hooks();
         return p;
     }
@@ -88,6 +107,8 @@ private:
     static free_hook    _old_free;
     static realloc_hook _old_realloc;
 };
+
+using mtrace_printer = mtrace<printer_handler>;
 
 malloc_hook mtrace::_old_malloc;
 free_hook mtrace::_old_free;
