@@ -16,19 +16,22 @@ namespace
 
 struct printer_handler
 {
-    void operator()(size_t size, const void* caller)
+    static void pre_malloc(size_t /*size*/) {}
+    static void post_malloc(size_t size, const void* mem)
     {
-        std::cout << "malloc " << size << std::endl;
+        std::cout << "malloc " << size << " bytes at " << mem << std::endl;
     }
 
-    void operator()(void* mem, const void* caller)
+    static void pre_free(const void* /*mem*/) {}
+    static void post_free(const void* mem)
     {
         std::cout << "free " << mem << std::endl;
     }
 
-    void operator()(void* mem, size_t size, const void* caller)
+    static void pre_realloc(const void* /*mem*/, size_t /*size*/) {}
+    static void post_realloc(const void* mem, size_t size, const void* new_mem)
     {
-        std::cout << "realloc " << mem << " bytes: " << size << std::endl;
+        std::cout << "realloc " << size << " bytes from " << mem << " to " << new_mem << std::endl;
     }
 };
 
@@ -50,10 +53,11 @@ struct mtrace
     {
         restore_hooks();
 
+        Handler::pre_malloc(size);
         void* p = ::malloc(size);
+        Handler::post_malloc(size, p);
 
         save_hooks();
-        Handler()(size, caller);
         load_custom_hooks();
         return p;
     }
@@ -62,10 +66,11 @@ struct mtrace
     {
         restore_hooks();
 
+        Handler::pre_free(mem);
         ::free(mem);
+        Handler::post_free(mem);
 
         save_hooks();
-        Handler()(mem, caller);
         load_custom_hooks();
     }
 
@@ -73,10 +78,11 @@ struct mtrace
     {
         restore_hooks();
 
+        Handler::pre_realloc(mem, size);
         void* p = ::realloc(mem, size);
+        Handler::post_realloc(mem, size, p);
 
         save_hooks();
-        Handler()(mem, size, caller);
         load_custom_hooks();
         return p;
     }
