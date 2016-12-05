@@ -51,9 +51,9 @@ inline void init()
 
 }
 
-struct chrono
+struct tsc_chrono
 {
-    chrono() =default;
+    tsc_chrono() =default;
 
     static void init()
     {
