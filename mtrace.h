@@ -5,35 +5,12 @@ extern "C"
 #include <malloc.h>
 }
 
-#include <iostream>
-
 namespace
 {
     using malloc_hook = void*(*)(size_t, const void*);
     using free_hook = void(*)(void*, const void*);
     using realloc_hook = void*(*)(void*, size_t, const void*);
 }
-
-struct printer_handler
-{
-    static void pre_malloc(size_t /*size*/) {}
-    static void post_malloc(size_t size, const void* mem)
-    {
-        std::cout << "malloc " << size << " bytes at " << mem << std::endl;
-    }
-
-    static void pre_free(const void* /*mem*/) {}
-    static void post_free(const void* mem)
-    {
-        std::cout << "free " << mem << std::endl;
-    }
-
-    static void pre_realloc(const void* /*mem*/, size_t /*size*/) {}
-    static void post_realloc(const void* mem, size_t size, const void* new_mem)
-    {
-        std::cout << "realloc " << size << " bytes from " << mem << " to " << new_mem << std::endl;
-    }
-};
 
 template <typename Handler>
 struct mtrace
