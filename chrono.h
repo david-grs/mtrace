@@ -57,7 +57,7 @@ struct chrono
 
     static void init()
     {
-      detail::init();
+        detail::init();
     }
 
     void start()
