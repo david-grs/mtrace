@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
-install(DIRECTORY DESTINATION include)
-install(FILES mtrace.h DESTINATION include RENAME mtrace)
+set(HEADERS mtrace.h tsc_chrono.h malloc_chrono.h malloc_printer.h)
 
+install(DIRECTORY DESTINATION include/mtrace)
+install(FILES ${HEADERS} DESTINATION include/mtrace)
 
