@@ -34,18 +34,18 @@ TEST(mtrace, chrono)
         auto uptr = std::make_unique<int>(5);
         (void)uptr;
 
-        malloc_time = std::get<0>(mc).elapsed_time_malloc().count();
+        malloc_time = std::get<0>(mc).malloc_time().count();
         EXPECT_GE(malloc_time, 1);
-        EXPECT_EQ(0, std::get<0>(mc).elapsed_time_free().count());
-        EXPECT_EQ(0, std::get<0>(mc).elapsed_time_realloc().count());
+        EXPECT_EQ(0, std::get<0>(mc).free_time().count());
+        EXPECT_EQ(0, std::get<0>(mc).realloc_time().count());
     }
 
 
-    EXPECT_EQ(malloc_time, std::get<0>(mc).elapsed_time_malloc().count());
+    EXPECT_EQ(malloc_time, std::get<0>(mc).malloc_time().count());
 
-    int64_t free_time = std::get<0>(mc).elapsed_time_free().count();
+    int64_t free_time = std::get<0>(mc).free_time().count();
     EXPECT_GE(free_time, 1);
-    EXPECT_EQ(0, std::get<0>(mc).elapsed_time_realloc().count());
+    EXPECT_EQ(0, std::get<0>(mc).realloc_time().count());
 }
 
 TEST(mtrace, chrono_counter_printer)
@@ -57,14 +57,14 @@ TEST(mtrace, chrono_counter_printer)
         auto uptr = std::make_unique<int>(5);
         (void)uptr;
 
-        EXPECT_GE(std::get<0>(mc).elapsed_time_malloc().count(), 1);
+        EXPECT_GE(std::get<0>(mc).malloc_time().count(), 1);
 
         EXPECT_EQ(1, std::get<2>(mc).malloc_calls());
         EXPECT_EQ(0, std::get<2>(mc).free_calls());
         EXPECT_EQ(0, std::get<2>(mc).realloc_calls());
     }
 
-    EXPECT_GE(std::get<0>(mc).elapsed_time_free().count(), 1);
+    EXPECT_GE(std::get<0>(mc).free_time().count(), 1);
 
     EXPECT_EQ(1, std::get<2>(mc).malloc_calls());
     EXPECT_EQ(1, std::get<2>(mc).free_calls());
