@@ -91,8 +91,6 @@ private:
     static realloc_hook _old_realloc;
 };
 
-using mtrace_printer = mtrace<printer_handler>;
-
 template <typename Handler> malloc_hook mtrace<Handler>::_old_malloc;
 template <typename Handler> free_hook mtrace<Handler>::_old_free;
 template <typename Handler> realloc_hook mtrace<Handler>::_old_realloc;
