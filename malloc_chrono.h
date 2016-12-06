@@ -6,6 +6,11 @@
 
 struct malloc_chrono
 {
+    static void init()
+    {
+        tsc_chrono::init();
+    }
+
     static void pre_malloc(size_t)
     {
         _chrono().start();

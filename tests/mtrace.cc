@@ -6,10 +6,12 @@
 
 int main()
 {
+  malloc_chrono::init();
   mtrace<malloc_chrono> mt;
 
   {
     auto uptr = std::make_unique<int>(5);
+    (void)malloc(100);
 
     std::cout << "malloc=" << malloc_chrono::elapsed_time_malloc().count() << std::endl;
     std::cout << "free=" << malloc_chrono::elapsed_time_free().count() << std::endl;
