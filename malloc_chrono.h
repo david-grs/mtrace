@@ -6,86 +6,68 @@
 
 struct malloc_chrono
 {
-    static void init()
+    malloc_chrono()
     {
         tsc_chrono::init();
     }
 
-    static void pre_malloc(size_t)
+    void pre_malloc(size_t)
     {
-        _chrono().start();
+        _chrono.start();
     }
 
-    static void post_malloc(size_t, const void*)
+    void post_malloc(size_t, const void*)
     {
-        _data().elapsed_time_malloc += _chrono().elapsed();
+        _elapsed_time_malloc += _chrono.elapsed();
     }
 
-    static void pre_free(const void*)
+    void pre_free(const void*)
     {
-        _chrono().start();
+        _chrono.start();
     }
 
-    static void post_free(const void*)
+    void post_free(const void*)
     {
-        _data().elapsed_time_free += _chrono().elapsed();
+        _elapsed_time_free += _chrono.elapsed();
     }
 
-    static void pre_realloc(const void*, size_t)
+    void pre_realloc(const void*, size_t)
     {
-        _chrono().start();
+        _chrono.start();
     }
 
-    static void post_realloc(const void*, size_t, const void*)
+    void post_realloc(const void*, size_t, const void*)
     {
-        _data().elapsed_time_realloc += _chrono().elapsed();
+        _elapsed_time_realloc += _chrono.elapsed();
     }
 
-    static std::chrono::nanoseconds elapsed_time_malloc()
+    std::chrono::nanoseconds elapsed_time_malloc()
     {
-        return tsc_chrono::from_cycles(_data().elapsed_time_malloc);
+        return tsc_chrono::from_cycles(_elapsed_time_malloc);
     }
 
-    static std::chrono::nanoseconds elapsed_time_free()
+    std::chrono::nanoseconds elapsed_time_free()
     {
-        return tsc_chrono::from_cycles(_data().elapsed_time_free);
+        return tsc_chrono::from_cycles(_elapsed_time_free);
     }
 
-    static std::chrono::nanoseconds elapsed_time_realloc()
+    std::chrono::nanoseconds elapsed_time_realloc()
     {
-        return tsc_chrono::from_cycles(_data().elapsed_time_realloc);
+        return tsc_chrono::from_cycles(_elapsed_time_realloc);
     }
 
-    static void clear()
+    void clear()
     {
-        _data().clear();
+        _elapsed_time_malloc = {};
+        _elapsed_time_free = {};
+        _elapsed_time_realloc = {};
     }
 
 private:
-    struct data
-    {
-        void clear()
-        {
-            elapsed_time_malloc = {};
-            elapsed_time_free = {};
-            elapsed_time_realloc = {};
-        }
+    double _elapsed_time_malloc = {};
+    double _elapsed_time_free = {};
+    double _elapsed_time_realloc = {};
 
-        double elapsed_time_malloc = {};
-        double elapsed_time_free = {};
-        double elapsed_time_realloc = {};
-    };
-
-    static data& _data()
-    {
-        static data d;
-        return d;
-    }
-
-    static tsc_chrono& _chrono()
-    {
-        static tsc_chrono c;
-        return c;
-    }
+    tsc_chrono _chrono;
 };
 
