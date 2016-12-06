@@ -7,3 +7,5 @@ add_subdirectory(tests)
 install(DIRECTORY DESTINATION include/mtrace)
 install(FILES ${HEADERS} DESTINATION include/mtrace)
 
+add_definitions(-Wno-deprecated-declarations)
+add_executable(example example.cc)
