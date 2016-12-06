@@ -1,17 +1,33 @@
 #pragma once
 
+#include <tuple>
+#include <utility>
+
 extern "C"
 {
 #include <malloc.h>
 }
-
-#include <initializer_list>
 
 namespace
 {
     using malloc_hook = void*(*)(size_t, const void*);
     using free_hook = void(*)(void*, const void*);
     using realloc_hook = void*(*)(void*, size_t, const void*);
+}
+
+namespace detail
+{
+    template<typename T, typename F, std::size_t... Is>
+    void for_each(T&& t, F f, std::integer_sequence<std::size_t, Is...>)
+    {
+        auto l = { (f(std::get<Is>(t)), 0)... };
+    }
+
+    template<typename... Ts, typename F>
+    void for_each_in_tuple(std::tuple<Ts...>& t, F f)
+    {
+        detail::for_each(t, f, std::make_index_sequence<sizeof...(Ts)>{});
+    }
 }
 
 template <typename... Handlers>
@@ -28,18 +44,13 @@ struct mtrace
         restore_hooks();
     }
 
-    static void test()
-    {
-        std::initializer_list<int>{(Handlers::pre_malloc(0), 0)... };
-    }
-
     static void* malloc(size_t size, const void* caller)
     {
         restore_hooks();
 
-        std::initializer_list<int>{(Handlers::pre_malloc(size), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_malloc(size); });
         void* p = ::malloc(size);
-        std::initializer_list<int>{(Handlers::post_malloc(size, p), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_malloc(size, p); });
 
         save_hooks();
         load_custom_hooks();
@@ -50,9 +61,9 @@ struct mtrace
     {
         restore_hooks();
 
-        std::initializer_list<int>{(Handlers::pre_free(mem), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_free(mem); });
         ::free(mem);
-        std::initializer_list<int>{(Handlers::post_free(mem), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_free(mem); });
 
         save_hooks();
         load_custom_hooks();
@@ -62,9 +73,9 @@ struct mtrace
     {
         restore_hooks();
 
-        std::initializer_list<int>{(Handlers::pre_realloc(mem, size), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_realloc(mem, size); });
         void* p = ::realloc(mem, size);
-        std::initializer_list<int>{(Handlers::post_realloc(mem, size, p), 0)... };
+        detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_realloc(mem, size, p); });
 
         save_hooks();
         load_custom_hooks();
@@ -96,9 +107,12 @@ private:
     static malloc_hook  _old_malloc;
     static free_hook    _old_free;
     static realloc_hook _old_realloc;
+
+    static std::tuple<Handlers...> _handlers;
 };
 
 template <typename... Handlers> malloc_hook mtrace<Handlers...>::_old_malloc;
 template <typename... Handlers> free_hook mtrace<Handlers...>::_old_free;
 template <typename... Handlers> realloc_hook mtrace<Handlers...>::_old_realloc;
+template <typename... Handlers> std::tuple<Handlers...> mtrace<Handlers...>::_handlers;
 
