@@ -5,6 +5,8 @@ extern "C"
 #include <malloc.h>
 }
 
+#include <initializer_list>
+
 namespace
 {
     using malloc_hook = void*(*)(size_t, const void*);
@@ -12,7 +14,7 @@ namespace
     using realloc_hook = void*(*)(void*, size_t, const void*);
 }
 
-template <typename Handler>
+template <typename... Handlers>
 struct mtrace
 {
     mtrace()
@@ -26,13 +28,18 @@ struct mtrace
         restore_hooks();
     }
 
+    static void test()
+    {
+        std::initializer_list<int>{(Handlers::pre_malloc(0), 0)... };
+    }
+
     static void* malloc(size_t size, const void* caller)
     {
         restore_hooks();
 
-        Handler::pre_malloc(size);
+        std::initializer_list<int>{(Handlers::pre_malloc(size), 0)... };
         void* p = ::malloc(size);
-        Handler::post_malloc(size, p);
+        std::initializer_list<int>{(Handlers::post_malloc(size, p), 0)... };
 
         save_hooks();
         load_custom_hooks();
@@ -43,9 +50,9 @@ struct mtrace
     {
         restore_hooks();
 
-        Handler::pre_free(mem);
+        std::initializer_list<int>{(Handlers::pre_free(mem), 0)... };
         ::free(mem);
-        Handler::post_free(mem);
+        std::initializer_list<int>{(Handlers::post_free(mem), 0)... };
 
         save_hooks();
         load_custom_hooks();
@@ -55,9 +62,9 @@ struct mtrace
     {
         restore_hooks();
 
-        Handler::pre_realloc(mem, size);
+        std::initializer_list<int>{(Handlers::pre_realloc(mem, size), 0)... };
         void* p = ::realloc(mem, size);
-        Handler::post_realloc(mem, size, p);
+        std::initializer_list<int>{(Handlers::post_realloc(mem, size, p), 0)... };
 
         save_hooks();
         load_custom_hooks();
@@ -91,7 +98,7 @@ private:
     static realloc_hook _old_realloc;
 };
 
-template <typename Handler> malloc_hook mtrace<Handler>::_old_malloc;
-template <typename Handler> free_hook mtrace<Handler>::_old_free;
-template <typename Handler> realloc_hook mtrace<Handler>::_old_realloc;
+template <typename... Handlers> malloc_hook mtrace<Handlers...>::_old_malloc;
+template <typename... Handlers> free_hook mtrace<Handlers...>::_old_free;
+template <typename... Handlers> realloc_hook mtrace<Handlers...>::_old_realloc;
 
