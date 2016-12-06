@@ -123,7 +123,7 @@ private:
     static std::tuple<Handlers...> _handlers;
 
     template <std::size_t I, typename... Ts>
-    friend auto& std::get(mtrace<Ts...>);
+    friend auto& std::get(const mtrace<Ts...>&);
 };
 
 template <typename... Handlers> malloc_hook mtrace<Handlers...>::_old_malloc;
@@ -134,7 +134,7 @@ template <typename... Handlers> std::tuple<Handlers...> mtrace<Handlers...>::_ha
 namespace std
 {
     template<size_t I, typename... Handlers>
-    auto& get(mtrace<Handlers...> mt)
+    auto& get(const mtrace<Handlers...>& mt)
     {
         return std::get<I>(mt._handlers);
     }
