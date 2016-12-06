@@ -41,26 +41,19 @@ struct malloc_chrono
         _elapsed_time_realloc += _chrono.elapsed();
     }
 
-    std::chrono::nanoseconds elapsed_time_malloc()
+    std::chrono::nanoseconds elapsed_time_malloc() const
     {
         return tsc_chrono::from_cycles(_elapsed_time_malloc);
     }
 
-    std::chrono::nanoseconds elapsed_time_free()
+    std::chrono::nanoseconds elapsed_time_free() const
     {
         return tsc_chrono::from_cycles(_elapsed_time_free);
     }
 
-    std::chrono::nanoseconds elapsed_time_realloc()
+    std::chrono::nanoseconds elapsed_time_realloc() const
     {
         return tsc_chrono::from_cycles(_elapsed_time_realloc);
-    }
-
-    void clear()
-    {
-        _elapsed_time_malloc = {};
-        _elapsed_time_free = {};
-        _elapsed_time_realloc = {};
     }
 
 private:
