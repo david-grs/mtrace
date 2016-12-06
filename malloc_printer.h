@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-struct printer_handler
+struct malloc_printer
 {
     static void pre_malloc(size_t /*size*/) {}
     static void post_malloc(size_t size, const void* mem)
