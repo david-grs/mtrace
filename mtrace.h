@@ -44,6 +44,18 @@ struct mtrace
         restore_hooks();
     }
 
+    template <std::size_t I>
+    auto& get()
+    {
+        return std::get<I>(_handlers);
+    }
+
+    template <std::size_t I>
+    const auto& get() const
+    {
+        return std::get<I>(_handlers);
+    }
+
     static void* malloc(size_t size, const void* caller)
     {
         restore_hooks();
@@ -109,6 +121,9 @@ private:
     static realloc_hook _old_realloc;
 
     static std::tuple<Handlers...> _handlers;
+
+    template <std::size_t I, typename... Ts>
+    friend auto& std::get(mtrace<Ts...>);
 };
 
 template <typename... Handlers> malloc_hook mtrace<Handlers...>::_old_malloc;
@@ -116,3 +131,11 @@ template <typename... Handlers> free_hook mtrace<Handlers...>::_old_free;
 template <typename... Handlers> realloc_hook mtrace<Handlers...>::_old_realloc;
 template <typename... Handlers> std::tuple<Handlers...> mtrace<Handlers...>::_handlers;
 
+namespace std
+{
+    template<size_t I, typename... Handlers>
+    auto& get(mtrace<Handlers...> mt)
+    {
+        return std::get<I>(mt._handlers);
+    }
+}

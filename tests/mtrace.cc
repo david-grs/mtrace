@@ -4,7 +4,6 @@
 #include <iostream>
 #include <memory>
 
-
 int main()
 {
     mtrace<malloc_chrono> mt;
@@ -13,11 +12,11 @@ int main()
         auto uptr = std::make_unique<int>(5);
         (void)uptr;
 
-        //std::cout << "malloc=" << malloc_chrono::elapsed_time_malloc().count() << std::endl;
-        //std::cout << "free=" << malloc_chrono::elapsed_time_free().count() << std::endl;
+        std::cout << "malloc=" << std::get<0>(mt).elapsed_time_malloc().count() << std::endl;
+        std::cout << "free=" << std::get<0>(mt).elapsed_time_free().count() << std::endl;
     }
 
-    //std::cout << "malloc=" << malloc_chrono::elapsed_time_malloc().count() << std::endl;
-    //std::cout << "free=" << malloc_chrono::elapsed_time_free().count() << std::endl;
+    std::cout << "malloc=" << std::get<0>(mt).elapsed_time_malloc().count() << std::endl;
+    std::cout << "free=" << std::get<0>(mt).elapsed_time_free().count() << std::endl;
 }
 
