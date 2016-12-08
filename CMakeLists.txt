@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(HEADERS mtrace.h tsc_chrono.h malloc_chrono.h malloc_printer.h)
+set(HEADERS mtrace.h tsc_chrono.h malloc_chrono.h malloc_counter.h malloc_printer.h)
 
 add_subdirectory(tests)
 
