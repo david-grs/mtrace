@@ -1,6 +1,6 @@
 mtrace
 ======
-A very simple wrapper around malloc/free/realloc GNU libc hooks.
+A C++ wrapper around malloc/free/realloc GNU libc hooks.
 
 
 Example
@@ -10,19 +10,19 @@ Example
 
     {
         auto uptr = std::make_unique<int>(5);
-        std::cout << "after unique_ptr ctor: malloc=" << std::get<0>(mt).malloc_time().count() 
-                  << " free=" << std::get<0>(mt).free_time().count() << std::endl;
+        std::cout << "after unique_ptr ctor: malloc=" << std::get<0>(mt).malloc_time().count() << "ns "
+                  << " free=" << std::get<0>(mt).free_time().count() << "ns" << std::endl;
     }
 
-    std::cout << "after unique_ptr dtor: malloc=" << std::get<0>(mt).malloc_time().count() 
-              << " free=" << std::get<0>(mt).free_time().count() << std::endl;
+    std::cout << "after unique_ptr dtor: malloc=" << std::get<0>(mt).malloc_time().count() << "ns "
+              << " free=" << std::get<0>(mt).free_time().count() << "ns" << std::endl;
 ```
 
 Output:
 
 ```
-    after unique_ptr ctor: malloc=5100 free=0
-    after unique_ptr dtor: malloc=5100 free=1131
+    after unique_ptr ctor: malloc=5100ns free=0ns
+    after unique_ptr dtor: malloc=5100ns free=1131ns
 ```
 
 
