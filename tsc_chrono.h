@@ -32,6 +32,10 @@ struct tsc
 
 inline void init()
 {
+    double& tsc_freq_ghz = detail::tsc::get_freq_ghz();
+    if (tsc_freq_ghz)
+        return;
+
     using clock = std::chrono::high_resolution_clock;
 
     auto start = clock::now();
@@ -45,8 +49,7 @@ inline void init()
     auto duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
     uint64_t cycles = rdtsc_end - rdtsc_start;
 
-    double& tsc_freq_ghz = detail::tsc::get_freq_ghz();
-    tsc_freq_ghz= (double)cycles / duration_ns.count();
+    tsc_freq_ghz = (double)cycles / duration_ns.count();
 }
 
 }
