@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(HEADERS mtrace.h tsc_chrono.h malloc_chrono.h malloc_counter.h malloc_printer.h)
 
+include(gtest.cmake)
 add_subdirectory(tests)
 
 install(DIRECTORY DESTINATION include/mtrace)
