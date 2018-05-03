@@ -1,6 +1,5 @@
 #pragma once
 
-#include <tuple>
 #include <utility>
 
 extern "C"
@@ -15,26 +14,17 @@ namespace
 	using realloc_hook = void*(*)(void*, size_t, const void*);
 }
 
-namespace detail
-{
-	template<typename T, typename F, std::size_t... Is>
-	void for_each(T&& t, F f, std::integer_sequence<std::size_t, Is...>)
-	{
-		auto l = { (f(std::get<Is>(t)), 0)... };
-	}
-
-	template<typename... Ts, typename F>
-	void for_each_in_tuple(std::tuple<Ts...>& t, F f)
-	{
-		detail::for_each(t, f, std::make_index_sequence<sizeof...(Ts)>{});
-	}
-}
-
-template <typename... Handlers>
+template <class Handler>
 struct mtrace
 {
-	mtrace()
+	explicit mtrace() :
+		mtrace(Handler{})
+	{ }
+
+	explicit mtrace(Handler&& handler)
 	{
+		_handler = std::move(handler);
+
 		save_hooks();
 		load_custom_hooks();
 	}
@@ -44,50 +34,38 @@ struct mtrace
 		restore_hooks();
 	}
 
-	template <std::size_t I>
-	auto& get()
-	{
-		return std::get<I>(_handlers);
-	}
-
-	template <std::size_t I>
-	const auto& get() const
-	{
-		return std::get<I>(_handlers);
-	}
-
-	static void* malloc(size_t size, const void* caller)
+	static void* malloc(size_t size, const void* /*caller*/)
 	{
 		restore_hooks();
 
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_malloc(size); });
+		_handler.pre_malloc(size);
 		void* p = ::malloc(size);
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_malloc(size, p); });
+		_handler.post_malloc(size, p);
 
 		save_hooks();
 		load_custom_hooks();
 		return p;
 	}
 
-	static void free(void* mem, const void* caller)
+	static void free(void* mem, const void* /*caller*/)
 	{
 		restore_hooks();
 
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_free(mem); });
+		_handler.pre_free(mem);
 		::free(mem);
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_free(mem); });
+		_handler.post_free(mem);
 
 		save_hooks();
 		load_custom_hooks();
 	}
 
-	static void* realloc(void* mem, size_t size, const void* caller)
+	static void* realloc(void* mem, size_t size, const void* /*caller*/)
 	{
 		restore_hooks();
 
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.pre_realloc(mem, size); });
+		_handler.pre_realloc(mem, size);
 		void* p = ::realloc(mem, size);
-		detail::for_each_in_tuple(_handlers, [&](auto& x) { x.post_realloc(mem, size, p); });
+		_handler.post_realloc(mem, size, p);
 
 		save_hooks();
 		load_custom_hooks();
@@ -120,22 +98,10 @@ private:
 	static free_hook    _old_free;
 	static realloc_hook _old_realloc;
 
-	static std::tuple<Handlers...> _handlers;
-
-	template <std::size_t I, typename... Ts>
-	friend auto& std::get(const mtrace<Ts...>&);
+	static Handler _handler;
 };
 
-template <typename... Handlers> malloc_hook mtrace<Handlers...>::_old_malloc;
-template <typename... Handlers> free_hook mtrace<Handlers...>::_old_free;
-template <typename... Handlers> realloc_hook mtrace<Handlers...>::_old_realloc;
-template <typename... Handlers> std::tuple<Handlers...> mtrace<Handlers...>::_handlers;
-
-namespace std
-{
-	template<size_t I, typename... Handlers>
-	auto& get(const mtrace<Handlers...>& mt)
-	{
-		return std::get<I>(mt._handlers);
-	}
-}
+template <class Handler> malloc_hook mtrace<Handler>::_old_malloc;
+template <class Handler> free_hook mtrace<Handler>::_old_free;
+template <class Handler> realloc_hook mtrace<Handler>::_old_realloc;
+template <class Handler> Handler mtrace<Handler>::_handler;
