@@ -34,6 +34,8 @@ struct mtrace
 		restore_hooks();
 	}
 
+	const Handler& handler() const { return _handler; }
+
 	static void* malloc(size_t size, const void* /*caller*/)
 	{
 		restore_hooks();
