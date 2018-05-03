@@ -17,5 +17,6 @@ int main()
 
 	std::cout << "after unique_ptr dtor: malloc_time=" << hdl.malloc_time().count() << "ns "
 			  << "free_time=" << hdl.free_time().count() << "ns" << std::endl;
+
 	return 0;
 }
