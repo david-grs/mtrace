@@ -19,7 +19,7 @@ public:
 
 	void post_malloc(size_t, const void*)
 	{
-		_elapsed_time_malloc += _chrono.elapsed();
+		_elapsed_time_malloc += _chrono.elapsed_cycles();
 	}
 
 	void pre_free(const void*)
@@ -29,7 +29,7 @@ public:
 
 	void post_free(const void*)
 	{
-		_elapsed_time_free += _chrono.elapsed();
+		_elapsed_time_free += _chrono.elapsed_cycles();
 	}
 
 	void pre_realloc(const void*, size_t)
@@ -39,7 +39,7 @@ public:
 
 	void post_realloc(const void*, size_t, const void*)
 	{
-		_elapsed_time_realloc += _chrono.elapsed();
+		_elapsed_time_realloc += _chrono.elapsed_cycles();
 	}
 
 	std::chrono::nanoseconds malloc_time() const
@@ -58,9 +58,9 @@ public:
 	}
 
 private:
-	double _elapsed_time_malloc = {};
-	double _elapsed_time_free = {};
-	double _elapsed_time_realloc = {};
+	int64_t _elapsed_time_malloc = {};
+	int64_t _elapsed_time_free = {};
+	int64_t _elapsed_time_realloc = {};
 
 	tsc_chrono _chrono;
 };

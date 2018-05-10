@@ -29,6 +29,7 @@ static inline void cpuid()
 }
 
 static inline uint64_t rdtscp(int& chip, int& core)
+
 {
 	uint64_t rax, rcx, rdx;
 	__asm__ __volatile__("rdtscp" : "=a"(rax), "=d"(rdx), "=c"(rcx));
@@ -49,8 +50,10 @@ struct tsc
 inline void init()
 {
 	double& tsc_freq_ghz = detail::tsc::get_freq_ghz();
-	if (tsc_freq_ghz)
+	if (tsc_freq_ghz != .0)
+	{
 		return;
+	}
 
 	using Clock = std::conditional_t<std::chrono::high_resolution_clock::is_steady,
 									 std::chrono::high_resolution_clock,
@@ -73,10 +76,10 @@ inline void init()
 	if (core != core2 || chip != chip2)
 		throw std::runtime_error("please set this executable to a specific core");
 
-	auto duration_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+	auto duration_s = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 	uint64_t cycles = rdtsc_end - rdtsc_start;
 
-	tsc_freq_ghz = (double)cycles / duration_ns.count();
+	tsc_freq_ghz = static_cast<double>(cycles) / static_cast<double>(duration_s.count());
 }
 
 }
@@ -97,14 +100,14 @@ public:
 		m_start = detail::rdtsc();
 	}
 
-	int64_t elapsed() const
+	int64_t elapsed_cycles() const
 	{
 		uint64_t now = detail::rdtscp();
 		detail::cpuid();
 		return now - m_start;
 	}
 
-	int64_t elapsed_and_restart()
+	int64_t elapsed_cycles_and_restart()
 	{
 		detail::cpuid();
 		uint64_t now = detail::rdtscp();
@@ -116,12 +119,13 @@ public:
 
 	std::chrono::nanoseconds elapsed_time() const
 	{
-		return from_cycles(elapsed());
+		return from_cycles(elapsed_cycles());
 	}
 
 	static std::chrono::nanoseconds from_cycles(int64_t cycles)
 	{
-		return std::chrono::nanoseconds(std::llround(cycles / detail::tsc::get_freq_ghz()));
+		const double nanoseconds{static_cast<double>(cycles) / detail::tsc::get_freq_ghz()};
+		return std::chrono::nanoseconds(static_cast<int64_t>(nanoseconds));
 	}
 
 	static double get_freq_ghz()
